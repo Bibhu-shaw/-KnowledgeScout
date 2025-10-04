@@ -8,20 +8,24 @@ const cors = require('cors');
 const path = require('path');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Render sets PORT automatically
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// PostgreSQL connection
+// PostgreSQL connection using Render environment variables
 const pool = new Pool({
-  user: 'hackathon_user',
-  host: 'localhost',
-  database: 'hackathon_db',
-  password: 'hackathon_pass',
-  port: 5432,
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: process.env.DB_PORT,
+  ssl: {
+    rejectUnauthorized: false, // Required for Render PostgreSQL
+  },
 });
 
+// Test DB connection
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.error('DB connection failed:', err.message);
@@ -57,16 +61,21 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       text = result.value;
     }
 
-    // Split text into lines as chunks
     const chunks = text.split('\n').filter(chunk => chunk.trim());
 
     // Insert document
-    const docRes = await pool.query('INSERT INTO documents (name) VALUES ($1) RETURNING id', [file.originalname]);
+    const docRes = await pool.query(
+      'INSERT INTO documents (name) VALUES ($1) RETURNING id',
+      [file.originalname]
+    );
     const docId = docRes.rows[0].id;
 
     // Insert chunks
     for (const chunk of chunks) {
-      await pool.query('INSERT INTO chunks (doc_id, chunk_text) VALUES ($1, $2)', [docId, chunk]);
+      await pool.query(
+        'INSERT INTO chunks (doc_id, chunk_text) VALUES ($1, $2)',
+        [docId, chunk]
+      );
     }
 
     res.status(200).json({ message: 'File uploaded and processed' });
@@ -75,6 +84,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
+// Query endpoint
 app.post('/query', async (req, res) => {
   const { question } = req.body;
   try {
@@ -89,6 +99,7 @@ app.post('/query', async (req, res) => {
   }
 });
 
+// Start server
 app.listen(port, () => {
-  console.log(`Backend running on http://localhost:${port}`);
+  console.log(`Backend running on port ${port}`);
 });
