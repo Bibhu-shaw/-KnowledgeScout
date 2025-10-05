@@ -10,7 +10,13 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000; // Render sets PORT automatically
 
-app.use(cors());
+// Update CORS to allow your frontend URL
+app.use(cors({
+  origin: 'https://knowledge-scout-alpha.vercel.app', // frontend URL
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 
 // PostgreSQL connection using DATABASE_URL and SSL
