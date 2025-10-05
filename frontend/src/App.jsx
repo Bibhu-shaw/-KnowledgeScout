@@ -10,7 +10,7 @@ function App() {
   const [isSmiling, setIsSmiling] = useState(false);
   const [hasGrowled, setHasGrowled] = useState(false);
 
-  const API_BASE_URL = 'https://knowledgescout-2-6ala.onrender.com';
+  const API_BASE_URL = 'https://knowledgescout-backend-s0lg.onrender.com';
 
   const playGrowl = () => {
     if (hasGrowled) return;
