@@ -13,16 +13,10 @@ const port = process.env.PORT || 3000; // Render sets PORT automatically
 app.use(cors());
 app.use(bodyParser.json());
 
-// PostgreSQL connection using Render environment variables
+// PostgreSQL connection using DATABASE_URL and SSL
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  ssl: {
-    rejectUnauthorized: false, // Required for Render PostgreSQL
-  },
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }, // Required for Render PostgreSQL
 });
 
 // Test DB connection
